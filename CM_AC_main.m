@@ -23,16 +23,19 @@ if isunix
     addpath('/nethome/nilsolav/repos/hg/matlabtoolbox/echolab/readEKRaw')
     dd =  '/data/deep/data/echsosounder/akustikk_all/';
 else
-    cd D:\repos\svn\MODELS\MLprosjekt\
-    dd = '\\ces.imr.no\deep\data\echsosounder\akustikk_all\';
+    cd  D:\repos\Github\COGMAR_ACOUSTIC
+    dd = '\\ces.imr.no\deep\data\echosounder\akustikk_all\';
 end
 
 % This gets a list of all the cruise series
 DataOverview = dir(fullfile(dd,'dataoverviews','DataOverview*.mat'));
 
 %% Start loop over cruise series
-F='200';
+par.F='200';
+k=11; % SandEel
 warning off
+
+%%
 for k=11%1:length(DataOverview)
     dd_data = fullfile(dd,'data',DataOverview(k).name(1:end-4));
     
@@ -41,7 +44,7 @@ for k=11%1:length(DataOverview)
     dat2 = load(fullfile(dd,'dataoverviews',['DataOverview',DataOverview(k).name(13:end)]));
     
     % Loop over years witin cruise series
-    for i=1%:length(dat.pairedfiles)
+    for i=1:length(dat.pairedfiles)
         % Create survey - year directory
         dd_data_year = fullfile(dd,'data',DataOverview(k).name(1:end-4),dat2.DataStatus{i+1,2});
         
@@ -49,17 +52,17 @@ for k=11%1:length(DataOverview)
         raw0 = dir(fullfile(dd_data_year,'*.raw'));
         
         % I need column one and three (snap and raw)
-        for f=1%:length(raw0)
+        for f=1:length(raw0)
             
             % Create file names (in and out)
             [~,fn,~]=fileparts(raw0(i).name);
             png = fullfile(dd_data_year,[fn,'.png']);
             raw = fullfile(dd_data_year,[fn,'.raw']);
             snap = fullfile(dd_data_year,[fn,'.snap']);
-            
-            % Generate figure
+            cleandatfile = fullfile(dd_data_year,[fn,'.mat']);
+            % Generate figure and save clean data file
             try
-                CM_AC_createimages(snap,raw,png,F);
+                CM_AC_createimages(snap,raw,png,cleandatfile,par);
                 close gcf
                 disp([datestr(now),'; success ; ',fn])
             catch
