@@ -56,7 +56,6 @@ def model1():
     # Compile model 1
     model1.compile(optimizer = 'adam', loss=dice_coef_loss,
                      metrics=['categorical_accuracy', mean_dice_coef])
-    plot_model(model1, show_shapes ='True', show_layer_names = 'True', to_file='model1.png')
     return model1
 
 #%% Model 2
@@ -137,11 +136,6 @@ def model2():
     x = Activation("softmax")(x)
     model2 = Model(img_input, x)
     
-    #
-    plot_model(model2, show_shapes ='True', show_layer_names = 'True', to_file='model2.png')
-    
-    
-    
     # Compiling the CNN
     model2.compile(optimizer='adam', loss=dice_coef_loss,
                     metrics=['categorical_accuracy', mean_dice_coef])
@@ -194,9 +188,6 @@ def model3():
     x = Activation("softmax")(x)
     model3 = Model(img_input, x)
     
-    #
-    plot_model(model3, show_shapes ='True', show_layer_names = 'True', to_file='model3.png')
-        
     # Compiling the CNN
     model3.compile(optimizer='adam', loss=dice_coef_loss,
                     metrics=['categorical_accuracy', mean_dice_coef])

@@ -1,10 +1,20 @@
 %% MLproject_main2.m
 % This script reads the metadata, copies the data into a scratch disk, and
-% creates images for each pair of snap/raw files. After the script is run
+% creates images and subset data for each pair of snap/raw files. After the script is run
 % for a given cruise series, the raw and snap files are located in
 %
-% Output:
-%
+% Figure files and data files output:
+%\\ces.imr.no\deep\data\echosounder\akustikk_all\data\DataOverview_North Sea NOR Sandeel cruise in Apr_May\
+   
+
+% Plotting frequency
+par.f='38';
+
+% Generate test sets in in pixels
+par.dx = 400;%px
+par.dy = 400;%px
+par.overlapx = 200;%px
+par.overlapy = 200;%px
 
 
 % Dependencies:
@@ -12,16 +22,15 @@
 % https://github.com/nilsolav/NMDAPIreader
 % https://github.com/nilsolav/readEKraw
 
-
 %% Init
 
 % Define data directories
 if isunix
-    cd /nethome/nilsolav/repos/nilsolav/MODELS/MLprosjekt/
+	cd /nethome/nilsolav/repos/github/COGMAR_ACOUSTIC
     % Add libraries
     addpath('/nethome/nilsolav/repos/github/LSSSreader/src/')
     addpath('/nethome/nilsolav/repos/hg/matlabtoolbox/echolab/readEKRaw')
-    dd =  '/data/deep/data/echsosounder/akustikk_all/';
+    dd =  '/data/deep/data/echosounder/akustikk_all/';
 else
     cd  D:\repos\Github\COGMAR_ACOUSTIC
     dd = '\\ces.imr.no\deep\data\echosounder\akustikk_all\';
@@ -55,7 +64,7 @@ for k=11%1:length(DataOverview)
         for f=1:length(raw0)
             
             % Create file names (in and out)
-            [~,fn,~]=fileparts(raw0(i).name);
+            [~,fn,~]=fileparts(raw0(f).name);
             png = fullfile(dd_data_year,[fn,'.png']);
             raw = fullfile(dd_data_year,[fn,'.raw']);
             snap = fullfile(dd_data_year,[fn,'.snap']);

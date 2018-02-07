@@ -111,7 +111,6 @@ for k=1:size(ind,1)
     Idum = I(ind(k,1):(ind(k,1)+ind(k,3)),ind(k,2):(ind(k,2)+ind(k,4)));
     ind(k,5) = sum(Idum(:)~=0);
 end
-disp('test')
 
 %% Debug
 % clf
