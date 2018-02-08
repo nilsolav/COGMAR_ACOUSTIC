@@ -5,7 +5,7 @@ from pathlib import Path
 import os
 import numpy as np
 import scipy.io as spio
-
+from keras import backend as K
 #from sklearn.model_selection import train_test_split
 #from sklearn import preprocessing
 #from sklearn.utils import shuffle 
@@ -21,9 +21,13 @@ import scipy.io as spio
 #from keras import backend as K
 #from keras.layers.normalization import BatchNormalization
 #from keras.models import Model, load_model
+import os
+os.environ["CUDA_VISIBLE_DEVICES"]="1"
+
+os.chdir('/nethome/nilsolav/repos/github/COGMAR_ACOUSTIC')
 import CM_AC_models as md
 
-
+#%% Get training set and run training
 def gettrainingset(filename):
 
     # File definitions
@@ -33,13 +37,13 @@ def gettrainingset(filename):
     rawfile = filename+'.raw'
     mat = spio.loadmat(matfile)
 
-    #%% Reshape data into training sets
+    # Reshape data into training sets
     k=0
     # Initialize training set data array
     S= mat["ind"].shape
     imgs = np.zeros([S[0],6,400,400])
     speciesid = np.zeros([S[0],400,400])
-
+    print(S)
     for i in range(0,S[0]):
         if mat["ind"][i,4]>10000:
             x1 = mat["ind"][i,0]
@@ -51,13 +55,17 @@ def gettrainingset(filename):
             speciesid[k,:,:] = mat["I"][x1:x2,y1:y2]!=0
             k+=1
     # Release memory
+    print(k)
+    k = int(2**(np.floor(np.log2(k)))) #2**N length
+    print(k)
     imgs = imgs[1:(k-1),:,:,:]        
-    speciesid = speciesid[1:(k-1),:,:]        
+    speciesid = speciesid[1:(k-1),:,:]
+    speciesid = speciesid[:,np.newaxis,:,:]
     return imgs,speciesid
 
 #%% Get the model
 model = md.model1()
-
+K.clear_session()
 #%% Do da shit
 for year in range(2008,2016):
     fld = '/data/deep/data/echosounder/akustikk_all/data/DataOverview_North Sea NOR Sandeel cruise in Apr_May/'  
@@ -68,6 +76,8 @@ for year in range(2008,2016):
             print(filename)
             #try:
             imgs,speciesid = gettrainingset(fld+'/'+filename)
+            print(imgs.shape)
+            print(speciesid.shape)
                 # TRaining step
             model.fit(imgs,speciesid)
             #except:
