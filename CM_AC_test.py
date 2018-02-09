@@ -13,6 +13,8 @@ import os
 import numpy as np
 import scipy.io as spio
 import matplotlib.pyplot as plt
+import CM_AC_models as md
+from keras.utils import plot_model 
 #import time
 #from sklearn.model_selection import train_test_split
 #from sklearn import preprocessing
@@ -24,19 +26,21 @@ os.environ["PATH"] += os.pathsep + 'C:\\ProgramData\\Anaconda3\\pkgs\\graphviz-2
 #%% REad matlab file
 #fil='\\ces.imr.no\deep\data\echosounder\akustikk_all\data\DataOverview_North Sea NOR Sandeel cruise in Apr_May\2012\2012837-D20120424-T215026.mat'
 fil = 'test.mat'
+#%%
+fil= r'D:\data\deep\echosounder\akustikk_all\data\DataOverview_North Sea NOR Sandeel cruise in Apr_May\2008\2008205-D20080425-T043755.mat'
 mat = spio.loadmat(fil)
-
+freqs=4
 
 #%% Reshape data into training sets
 #img = mat["sv"][:,:,1]
 k=0
 # Initialize training set data array
 S= mat["ind"].shape
-imgs = np.zeros([S[0],6,400,400])
+imgs = np.zeros([S[0],freqs,400,400])
 speciesid = np.zeros([S[0],400,400])
 
 for i in range(0,S[0]):
-    if mat["ind"][i,4]>10000:
+    if mat["ind"][i,4]>10:
         x1 = mat["ind"][i,0]
         x2 = mat["ind"][i,0]+mat["ind"][i,2]
         y1 = mat["ind"][i,1]
@@ -45,9 +49,10 @@ for i in range(0,S[0]):
         imgs[k,:,:,:] =nils[np.newaxis,:,:,:] 
         speciesid[k,:,:] = mat["I"][x1:x2,y1:y2]!=0
         k+=1
-
-imgs = imgs[1:(k-1),:,:,:]        
-speciesid = speciesid[1:(k-1),:,:]        
+print(k)
+print(mat["F"])
+imgs = imgs[0:(k-1),:,:,:]        
+speciesid = speciesid[0:(k-1),:,:]        
 speciesid = speciesid[:,np.newaxis,:,:]
 #speciesid = to_categorical(speciesid)
 print(imgs.shape)
@@ -75,16 +80,13 @@ plt.setp([a.get_yticklabels() for a in axarr[:, 1]], visible=False)
 #plt.show()
 plt.savefig('subset.png')
 
-#
-#%% The models
-#
-import models as md
-
 #%% Choose and fit model
-#model = md.model1()
+model = md.model1(freqs)
+plot_model(model, show_shapes ='True', show_layer_names = 'True', to_file='model1.png')
 #model = md.model2()
-model = md.model3()
+#model = md.model3()
 
+    
 #%%
 model.fit(imgs,speciesid)
 

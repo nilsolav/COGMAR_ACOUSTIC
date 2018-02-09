@@ -1,51 +1,38 @@
 
 #%% Train the network per year
 #for year in range(2007,2016):
-from pathlib import Path
 import os
 import numpy as np
 import scipy.io as spio
 from keras import backend as K
-#from sklearn.model_selection import train_test_split
-#from sklearn import preprocessing
-#from sklearn.utils import shuffle 
+import platform
 
-#from keras.utils import plot_model 
-#from keras.utils import to_categorical 
-#from keras.layers.core import Activation, Reshape, Permute
-#from keras.models import Sequential
-#from keras.layers import Input, Dense, Dropout, Embedding,  Conv2D, GlobalAveragePooling1D, MaxPooling2D, concatenate, Conv2DTranspose
-#from keras.layers import Input, Dropout, Embedding,  Conv2D, MaxPooling2D, concatenate, Conv2DTranspose
-#import matplotlib.pyplot as plt
-#import time
-#from keras import backend as K
-#from keras.layers.normalization import BatchNormalization
-#from keras.models import Model, load_model
-import os
-os.environ["CUDA_VISIBLE_DEVICES"]="1"
+pl=platform.system()
 
-os.chdir('/nethome/nilsolav/repos/github/COGMAR_ACOUSTIC')
+if pl=='Linux':
+    os.chdir('/nethome/nilsolav/repos/github/COGMAR_ACOUSTIC')
+    os.environ["CUDA_VISIBLE_DEVICES"]="1"
+else:
+    os.chdir('D:\\repos\\Github\\COGMAR_ACOUSTIC')
+
 import CM_AC_models as md
 
 #%% Get training set and run training
-def gettrainingset(filename):
+def gettrainingset(filename,freqs):
 
     # File definitions
-    
     matfile = filename+'.mat'
-    print(os.path.isfile(matfile)) 
-    rawfile = filename+'.raw'
+    #print(os.path.isfile(matfile)) 
     mat = spio.loadmat(matfile)
-
+    #print(mat["F"])
     # Reshape data into training sets
     k=0
     # Initialize training set data array
     S= mat["ind"].shape
-    imgs = np.zeros([S[0],6,400,400])
+    imgs = np.zeros([S[0],freqs,400,400])
     speciesid = np.zeros([S[0],400,400])
-    print(S)
     for i in range(0,S[0]):
-        if mat["ind"][i,4]>10000:
+        if mat["ind"][i,4]>10:
             x1 = mat["ind"][i,0]
             x2 = mat["ind"][i,0]+mat["ind"][i,2]
             y1 = mat["ind"][i,1]
@@ -55,33 +42,50 @@ def gettrainingset(filename):
             speciesid[k,:,:] = mat["I"][x1:x2,y1:y2]!=0
             k+=1
     # Release memory
-    print(k)
-    k = int(2**(np.floor(np.log2(k)))) #2**N length
-    print(k)
-    imgs = imgs[1:(k-1),:,:,:]        
-    speciesid = speciesid[1:(k-1),:,:]
+    imgs = imgs[0:(k-1),:,:,:]        
+    speciesid = speciesid[0:(k-1),:,:]
     speciesid = speciesid[:,np.newaxis,:,:]
+    if k==0:
+        imgs=np.empty([0,4,400,400])
+        speciesid=np.empty([0,1,400,400])
+        
     return imgs,speciesid
 
 #%% Get the model
-model = md.model1()
+freqs=4
+model = md.model1(freqs)
 K.clear_session()
-#%% Do da shit
-for year in range(2008,2016):
-    fld = '/data/deep/data/echosounder/akustikk_all/data/DataOverview_North Sea NOR Sandeel cruise in Apr_May/'  
+# Do da shit
+for year in range(2008,2009):
+    if pl=='Linux':
+        fld = '/data/deep/data/echosounder/akustikk_all/data/DataOverview_North Sea NOR Sandeel cruise in Apr_May/'  
+    else:
+        fld = 'D:\\data\\deep\\echosounder\\akustikk_all\\data\DataOverview_North Sea NOR Sandeel cruise in Apr_May\\'
+ 
     fld+=str(year)
-    for file in os.listdir(fld):
+    flds = os.listdir(fld)
+    for file in flds[12:30]:
         if file.endswith(".mat"):
             filename, file_extension = os.path.splitext(file) 
-            print(filename)
             #try:
-            imgs,speciesid = gettrainingset(fld+'/'+filename)
+            if pl=='Linux':
+                filefld = fld+'/'+filename  
+            else:
+                filefld = fld+'\\'+filename  
+            imgs,speciesid = gettrainingset(filefld,freqs)
             print(imgs.shape)
             print(speciesid.shape)
-                # TRaining step
-            model.fit(imgs,speciesid)
+            # TRaining step
+            if imgs.size>0:
+                #break
+                #model = md.model1(freqs)
+                # Dette fungerer ikkje. Men dersom eg lagar ein ny modell (L56) for kvar rundeså går det fint.
+                model.fit(imgs,speciesid)
+                print(filefld+' OK')
+            else:
+                print(filefld+' No masks')
             #except:
-            #    print(filename+' failed')
+            #print(filefld+' failed')
 
 
 

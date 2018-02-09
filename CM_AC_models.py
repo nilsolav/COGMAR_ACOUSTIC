@@ -43,10 +43,10 @@ def dice_coef_loss(y_true, y_pred):
 
 
 #%%
-def model1():
+def model1(freqs):
     model1 = Sequential()
     # Step 1 - Convolution (32 filters / feature detectors each having 3x3 dimension)
-    model1.add(Conv2D(16, (3, 3), padding = 'same', input_shape = (6, 400, 400), activation = 'relu'))
+    model1.add(Conv2D(16, (3, 3), padding = 'same', input_shape = (freqs, 400, 400), activation = 'relu'))
     # Adding a second convolutional layer (32 filters / feature detectors each having 3x3 dimension)
     model1.add(Conv2D(8, (3,3), padding = 'same', activation = 'relu'))
     #model.add(MaxPooling2D(pool_size = (3,3), strides=2))
