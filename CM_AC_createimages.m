@@ -33,11 +33,35 @@ end
 %% Extract clean data file
 if ~isempty(datfile)
     %% Reshape data
-    sv = zeros(size(data.pings(ch).sv,1),size(data.pings(ch).sv,2),length(F));
+    Fi=find(F==par.rangef);
+    sv = zeros(size(data.pings(Fi).sv,1),size(data.pings(Fi).sv,2),length(F));
+    % Check if the range vectors are different
     for ch = 1:length(F)
-        sv(:,:,ch)=data.pings(ch).sv;
+        range(ch)=length(data.pings(ch).range);
     end
-    
+    if length(unique(range))==1 % Same range vector length
+        for ch = 1:length(F)
+            sv(:,:,ch)=data.pings(ch).sv;
+        end
+    else
+        % Resample/average if the ranges are different between freqs
+        for ch = 1:length(F)
+            if ch==Fi
+                sv(:,:,ch)=data.pings(ch).sv;
+            elseif range(ch)>range(Fi)
+               % Average    discretize(x,edges)
+               dfe = median(diff(data.pings(Fi).range));
+               edges = [data.pings(Fi).range-.5*dfe; data.pings(Fi).range(end)+.5*dfe]; 
+               bins = discretize(data.pings(ch).range, edges);
+               for p=1:size(data.pings(ch).sv,2)
+                   sv(:,p,ch)=accumarray(bins, data.pings(ch).sv(:,p), [], @mean);
+               end
+            else
+               % Resample
+               sv(:,:,ch)=interp1(data.pings(ch).range, data.pings(ch).sv,data.pings(Fi).range);   
+            end
+        end
+    end
     %% Extract the main binary layer
     [X,Y] = meshgrid(1:size(sv,2),data.pings(ch).range);
     I = zeros(size(data.pings(ch).sv,1),size(data.pings(ch).sv,2));

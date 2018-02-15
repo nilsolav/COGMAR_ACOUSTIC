@@ -10,6 +10,9 @@
 % Plotting frequency
 par.f='38';
 
+% Use the 38kHz as the main freq for the range resolution
+par.rangef = 38;
+
 % Generate test sets in in pixels
 par.dx = 400;%px
 par.dy = 400;%px
@@ -40,7 +43,7 @@ end
 DataOverview = dir(fullfile(dd,'dataoverviews','DataOverview*.mat'));
 
 %% Start loop over cruise series
-par.F='200';
+%par.F='200';
 k=11; % SandEel
 warning off
 
@@ -70,13 +73,13 @@ for k=11%1:length(DataOverview)
             snap = fullfile(dd_data_year,[fn,'.snap']);
             cleandatfile = fullfile(dd_data_year,[fn,'.mat']);
             % Generate figure and save clean data file
-            try
+   %         try
                 CM_AC_createimages(snap,raw,png,cleandatfile,par);
                 close gcf
                 disp([datestr(now),'; success ; ',fn])
-            catch
-                disp([datestr(now),'; failed  ;',fn])
-            end
+    %        catch
+    %            disp([datestr(now),'; failed  ;',fn])
+    %        end
         end
     end
 end
