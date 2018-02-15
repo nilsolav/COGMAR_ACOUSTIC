@@ -55,6 +55,7 @@ def gettrainingset(filename,freqs,minpixels):
     S= mat["ind"].shape
     imgs = np.zeros([S[0],len(freqs),400,400])
     speciesid = np.zeros([S[0],400,400])
+    print(S[0])
     for i in range(0,S[0]):
         if mat["ind"][i,4]>minpixels:
             x1 = mat["ind"][i,0]
@@ -96,12 +97,14 @@ imgs0 = np.empty([0,len(freqs),400,400])
 speciesid0 = np.empty([0,1,400,400])
 
 # Do da shit
-for year in range(2008,2009):
+for year in range(2005,2016):
     fld=fld0+str(year)
     flds = os.listdir(fld)
+    nofiles = False
     for file in flds:
         if file.endswith(".mat"):
             print('Reading '+file)
+            nofiles = True
             filename, file_extension = os.path.splitext(file) 
             #try:
             if pl=='Linux':
@@ -110,7 +113,7 @@ for year in range(2008,2009):
                 filefld = fld+'\\'+filename  
             imgs,speciesid = gettrainingset(filefld,freqs,minpixels)
             
-            # Write to HDF
+            # Write to npz
             S=imgs.shape
             #print(S)
             if S[0]!=0:
@@ -127,8 +130,10 @@ for year in range(2008,2009):
         imgs0_slice = imgs0[i*batchsize:((i+1)*batchsize-1),:,:,:]
         speciesid0_slice = speciesid0[i*batchsize:((i+1)*batchsize-1),:,:,:]
         np.savez(fld0+'batch'+str(year)+'_'+str(i),imgs=imgs0_slice,speciesid=speciesid0_slice)
-
-    imgs0_slice = imgs0[((i+1)*batchsize):,:,:,:]
-    speciesid0_slice = speciesid0[((i+1)*batchsize):,:,:,:]
-    np.savez(fld0+'batch'+str(year)+'_'+str(i+1),imgs=imgs0_slice,speciesid=speciesid0_slice)
-
+    
+    if nofiles:
+        imgs0_slice = imgs0[((i+1)*batchsize):,:,:,:]
+        speciesid0_slice = speciesid0[((i+1)*batchsize):,:,:,:]
+        np.savez(fld0+'batch'+str(year)+'_'+str(i+1),imgs=imgs0_slice,speciesid=speciesid0_slice)
+    else:
+        print('No files for '+str(year))
