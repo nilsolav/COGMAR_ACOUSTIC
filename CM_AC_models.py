@@ -15,31 +15,47 @@ from keras.models import Model, load_model
 
 K.set_image_dim_ordering('th') # Theano dimension ordering in this code
 #%% Dice Loss function
-smooth = 1e-5
+#smooth = 1e-5
+#
+#def dice_coef_anti(y_true, y_pred):
+#    y_true_anti = y_true[:,:,1]
+#    y_pred_anti = y_pred[:,:,1]
+#    intersection_anti = K.sum(y_true_anti * y_pred_anti)
+#    return (2 * intersection_anti + smooth) / (K.sum(y_true_anti)+ K.sum(y_pred_anti) + smooth)
+#
+#def dice_coef_cyc(y_true, y_pred):
+#    y_true_cyc = y_true[:,:,2]
+#    y_pred_cyc = y_pred[:,:,2]
+#    intersection_cyc = K.sum(y_true_cyc * y_pred_cyc)
+#    return (2 * intersection_cyc + smooth) / (K.sum(y_true_cyc) + K.sum(y_pred_cyc) + smooth)
+#
+#def dice_coef_nn(y_true, y_pred):
+#    y_true_nn = y_true[:,:,0]
+#    y_pred_nn = y_pred[:,:,0]
+#    intersection_nn = K.sum(y_true_nn * y_pred_nn)
+#    return (2 * intersection_nn + smooth) / (K.sum(y_true_nn) + K.sum(y_pred_nn) + smooth)
+#    
+#def mean_dice_coef(y_true, y_pred):
+#    return (dice_coef_anti(y_true, y_pred) + dice_coef_cyc(y_true, y_pred) + dice_coef_nn(y_true, y_pred))/3.
+#           
+#def dice_coef_loss(y_true, y_pred):
+#    return 1 - mean_dice_coef(y_true, y_pred) 
+#
 
-def dice_coef_anti(y_true, y_pred):
-    y_true_anti = y_true[:,:,1]
-    y_pred_anti = y_pred[:,:,1]
-    intersection_anti = K.sum(y_true_anti * y_pred_anti)
-    return (2 * intersection_anti + smooth) / (K.sum(y_true_anti)+ K.sum(y_pred_anti) + smooth)
+#https://github.com/jocicmarko/ultrasound-nerve-segmentation/blob/master/train.py#L19
 
-def dice_coef_cyc(y_true, y_pred):
-    y_true_cyc = y_true[:,:,2]
-    y_pred_cyc = y_pred[:,:,2]
-    intersection_cyc = K.sum(y_true_cyc * y_pred_cyc)
-    return (2 * intersection_cyc + smooth) / (K.sum(y_true_cyc) + K.sum(y_pred_cyc) + smooth)
+#%%
+smooth=1
 
-def dice_coef_nn(y_true, y_pred):
-    y_true_nn = y_true[:,:,0]
-    y_pred_nn = y_pred[:,:,0]
-    intersection_nn = K.sum(y_true_nn * y_pred_nn)
-    return (2 * intersection_nn + smooth) / (K.sum(y_true_nn) + K.sum(y_pred_nn) + smooth)
-    
-def mean_dice_coef(y_true, y_pred):
-    return (dice_coef_anti(y_true, y_pred) + dice_coef_cyc(y_true, y_pred) + dice_coef_nn(y_true, y_pred))/3.
-           
+def dice_coef(y_true, y_pred):
+    y_true_f = K.flatten(y_true)
+    y_pred_f = K.flatten(y_pred)
+    intersection = K.sum(y_true_f * y_pred_f)
+    return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
+
+
 def dice_coef_loss(y_true, y_pred):
-    return 1 - mean_dice_coef(y_true, y_pred) 
+    return -dice_coef(y_true, y_pred)
 
 
 #%%
@@ -54,12 +70,14 @@ def model1(freqs):
     #model.add(MaxPooling2D(pool_size = (3,3), strides=2))
 
     # Compile model 1
-    model1.compile(optimizer = 'adam', loss=dice_coef_loss,
-                     metrics=['categorical_accuracy', mean_dice_coef])
+    #model1.compile(optimizer = 'adam', loss=dice_coef_loss,
+    #                 metrics=['categorical_accuracy', dice_coef_loss])
+    
+    model1.compile(optimizer='adam', loss=dice_coef_loss, metrics=[dice_coef])
     return model1
 
 #%% Model 2
-def model2():
+def model2(freqs):
     width = 400
     height = 400
     nbClass = 3
@@ -68,7 +86,7 @@ def model2():
     
     ###################################### INPUT LAYER
     
-    img_input = Input(shape=(6, height, width))
+    img_input = Input(shape=(freqs, height, width))
     
     ######################################ENCODER
     
@@ -137,8 +155,9 @@ def model2():
     model2 = Model(img_input, x)
     
     # Compiling the CNN
-    model2.compile(optimizer='adam', loss=dice_coef_loss,
-                    metrics=['categorical_accuracy', mean_dice_coef])
+    #model2.compile(optimizer='adam', loss=dice_coef_loss,
+    #                metrics=['categorical_accuracy', mean_dice_coef])
+    model2.compile(optimizer='adam', loss=dice_coef_loss, metrics=[dice_coef])
     
     return model2
 

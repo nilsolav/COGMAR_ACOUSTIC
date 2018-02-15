@@ -10,6 +10,8 @@ Created on Wed Jan 31 13:45:49 2018
 #from keras.models import Sequential
 #from keras.layers import Activation, MaxPooling2D, Flatten
 import os
+os.chdir('D:\\repos\\Github\\COGMAR_ACOUSTIC')
+os.environ["PATH"] += os.pathsep + 'C:\\ProgramData\\Anaconda3\\pkgs\\graphviz-2.38.0-4\\Library\\bin\\graphviz'
 import numpy as np
 import scipy.io as spio
 import matplotlib.pyplot as plt
@@ -21,11 +23,9 @@ from keras.utils import plot_model
 #from sklearn.utils import shuffle 
 
 
-os.chdir('D:\\repos\\Github\\COGMAR_ACOUSTIC')
-os.environ["PATH"] += os.pathsep + 'C:\\ProgramData\\Anaconda3\\pkgs\\graphviz-2.38.0-4\\Library\\bin\\graphviz'
 #%% REad matlab file
 #fil='\\ces.imr.no\deep\data\echosounder\akustikk_all\data\DataOverview_North Sea NOR Sandeel cruise in Apr_May\2012\2012837-D20120424-T215026.mat'
-fil = 'test.mat'
+#fil = 'test.mat'
 #%%
 fil= r'D:\data\deep\echosounder\akustikk_all\data\DataOverview_North Sea NOR Sandeel cruise in Apr_May\2008\2008205-D20080425-T043755.mat'
 mat = spio.loadmat(fil)
@@ -78,7 +78,21 @@ plt.setp([a.get_xticklabels() for a in axarr[1, :]], visible=False)
 plt.setp([a.get_yticklabels() for a in axarr[:, 0]], visible=False)
 plt.setp([a.get_yticklabels() for a in axarr[:, 1]], visible=False)
 #plt.show()
-plt.savefig('subset.png')
+plt.savefig('Figure2_subset.png')
+#%% Cost function
+
+smooth = 1
+y_pred = np.squeeze(speciesid[k1,:,:])
+y_true = np.squeeze(speciesid[k2,:,:])*0
+intersection = np.sum(np.multiply(y_pred,y_true))
+dice = (2. * intersection + smooth) / (np.sum(y_true) + np.sum(y_pred) + smooth)
+print(dice)
+
+#def dice_coef_loss_num(y_true, y_pred):
+#    return -dice_coef_num(y_true, y_pred)
+#
+#test=dice_coef_loss_num(, np.squeeze(speciesid[k2,:,:]))
+#print(test)
 
 #%% Choose and fit model
 model = md.model1(freqs)

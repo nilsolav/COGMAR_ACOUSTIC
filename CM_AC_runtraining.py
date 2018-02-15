@@ -22,6 +22,8 @@ import CM_AC_models as md
 K.clear_session()
 freqs=4
 model = md.model1(freqs)
+# stored frequencies=[18, 38, 70, 120, 200, 333]
+freqsi = [0, 1, 3, 4]
 
 # File locations
 if pl=='Linux':
@@ -35,7 +37,7 @@ for file in flds:
     if file.endswith(".npz"):
             print(file)
             dat=np.load(fld+file)
-            model.fit(dat["imgs"],dat["speciesid"])
+            model.fit(dat["imgs"][:,freqsi,:,:],dat["speciesid"])
 
 
 
