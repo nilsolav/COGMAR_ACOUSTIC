@@ -5,7 +5,7 @@
 %
 % Figure files and data files output:
 %\\ces.imr.no\deep\data\echosounder\akustikk_all\data\DataOverview_North Sea NOR Sandeel cruise in Apr_May\
-   
+
 
 % Plotting frequency
 par.f='38';
@@ -29,7 +29,7 @@ par.overlapy = 200;%px
 
 % Define data directories
 if isunix
-	cd /nethome/nilsolav/repos/github/COGMAR_ACOUSTIC
+    cd /nethome/nilsolav/repos/github/COGMAR_ACOUSTIC
     % Add libraries
     addpath('/nethome/nilsolav/repos/github/LSSSreader/src/')
     addpath('/nethome/nilsolav/repos/hg/matlabtoolbox/echolab/readEKRaw')
@@ -48,9 +48,8 @@ k=11; % SandEel
 warning off
 
 %%
-for k=11%1:length(DataOverview)
+for k=11:length(DataOverview)
     dd_data = fullfile(dd,'data',DataOverview(k).name(1:end-4));
-    
     % Load the paired files
     dat = load(fullfile(dd,'dataoverviews',['DataPairedFiles',DataOverview(k).name(13:end)]));
     dat2 = load(fullfile(dd,'dataoverviews',['DataOverview',DataOverview(k).name(13:end)]));
@@ -63,23 +62,34 @@ for k=11%1:length(DataOverview)
         % Get the file list
         raw0 = dir(fullfile(dd_data_year,'*.raw'));
         
+        % Generate status file if it is missing
+        statusfile = fullfile(dd_data_year,'datastatus.mat');
+        if ~exist(statusfile)
+            status = zeros(length(raw0),1);
+            save(statusfile,'status')
+        end
         % I need column one and three (snap and raw)
         for f=1:length(raw0)
-            
-            % Create file names (in and out)
-            [~,fn,~]=fileparts(raw0(f).name);
-            png = fullfile(dd_data_year,[fn,'.png']);
-            raw = fullfile(dd_data_year,[fn,'.raw']);
-            snap = fullfile(dd_data_year,[fn,'.snap']);
-            cleandatfile = fullfile(dd_data_year,[fn,'.mat']);
-            % Generate figure and save clean data file
-   %         try
-                CM_AC_createimages(snap,raw,png,cleandatfile,par);
-                close gcf
-                disp([datestr(now),'; success ; ',fn])
-    %        catch
-    %            disp([datestr(now),'; failed  ;',fn])
-    %        end
+            load(statusfile)
+            if status(f)<=0 % Don't rerun files that are ok (positive numbers)
+                % Create file names (in and out)
+                [~,fn,~]=fileparts(raw0(f).name);
+                png = fullfile(dd_data_year,[fn,'.png']);
+                raw = fullfile(dd_data_year,[fn,'.raw']);
+                snap = fullfile(dd_data_year,[fn,'.snap']);
+                cleandatfile = fullfile(dd_data_year,[fn,'.mat']);
+                % Generate figure and save clean data file
+                try
+                    CM_AC_createimages(snap,raw,png,cleandatfile,par);
+                    close gcf
+                    disp([datestr(now),'; success ; ',fn])
+                    status(f)=now;
+                catch
+                    disp([datestr(now),'; failed  ;',fn])
+                    status(f)=-now;
+                end
+            end
+            save(statusfile,'status')
         end
     end
 end
