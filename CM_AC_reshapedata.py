@@ -108,40 +108,48 @@ speciesid0 = np.empty([0,1,400,400])
 
 # Do da shit
 for year in range(2008,2016):
-    fld=fld0+str(year)
-    flds = os.listdir(fld)
-    #flds = flds[100:200]#debug hack
-    for file in flds:
-        if file.endswith(".mat"):
-            print('Reading '+file)
-            filename, file_extension = os.path.splitext(file) 
-            try:
-                if pl=='Linux':
-                    filefld = fld+'/'+filename  
-                else:
-                    filefld = fld+'\\'+filename  
-                    
-                imgs,speciesid = gettrainingset(filefld,freqs,minpixels)
-            
-                # Write to HDF
-                S=imgs.shape
-                #print(S)
-                if S[0]!=0:
-                    imgs0=np.concatenate((imgs0,imgs),axis=0)
-                    speciesid0=np.concatenate((speciesid0,speciesid),axis=0)
+    try:
+        fld=fld0+str(year)
+        flds = os.listdir(fld)
+        #flds = flds[100:200]#debug hack
+        for file in flds:
+            if file.endswith(".mat"):
+                print('Reading '+file)
+                filename, file_extension = os.path.splitext(file) 
+                try:
+                    if pl=='Linux':
+                        filefld = fld+'/'+filename  
+                    else:
+                        filefld = fld+'\\'+filename  
+                        
+                    imgs,speciesid = gettrainingset(filefld,freqs,minpixels)
                 
-    # Randomize and write files
-    S2 = imgs0.shape
-    #S2[0]-np.floor(S2[0]/batchsize)*batchsize
-    imgs0, speciesid0 = shuffle(imgs0, speciesid0, random_state=0)
-    NF = int(np.floor(S2[0]/batchsize))
-    for i in range(0,NF):
-        print('Storing '+fld0+'batch'+str(year)+'_'+str(i)+'.npz')
-        imgs0_slice = imgs0[i*batchsize:((i+1)*batchsize-1),:,:,:]
-        speciesid0_slice = speciesid0[i*batchsize:((i+1)*batchsize-1),:,:,:]
-        np.savez(fld0+'batch'+str(year)+'_'+str(i),imgs=imgs0_slice,speciesid=speciesid0_slice)
-
-    imgs0_slice = imgs0[((i+1)*batchsize):,:,:,:]
-    speciesid0_slice = speciesid0[((i+1)*batchsize):,:,:,:]
-    np.savez(fld0+'batch'+str(year)+'_'+str(i+1),imgs=imgs0_slice,speciesid=speciesid0_slice)
-
+                    # Write to HDF
+                    S=imgs.shape
+                    #print(S)
+                    if S[0]!=0:
+                        imgs0=np.concatenate((imgs0,imgs),axis=0)
+                        speciesid0=np.concatenate((speciesid0,speciesid),axis=0)
+                except:
+                    print(file+' failed')
+                    
+        # Randomize and write files
+        S2 = imgs0.shape
+        #S2[0]-np.floor(S2[0]/batchsize)*batchsize
+        imgs0, speciesid0 = shuffle(imgs0, speciesid0, random_state=0)
+        NF = int(np.floor(S2[0]/batchsize))
+        if NF>0:
+            for i in range(0,NF):
+                print('Storing '+fld0+'batch'+str(year)+'_'+str(i)+'.npz')
+                imgs0_slice = imgs0[i*batchsize:((i+1)*batchsize-1),:,:,:]
+                speciesid0_slice = speciesid0[i*batchsize:((i+1)*batchsize-1),:,:,:]
+                np.savez(fld0+'batch'+str(year)+'_'+str(i),imgs=imgs0_slice,speciesid=speciesid0_slice)
+        else:
+            i=0
+        
+        imgs0_slice = imgs0[((i+1)*batchsize):,:,:,:]
+        speciesid0_slice = speciesid0[((i+1)*batchsize):,:,:,:]
+        np.savez(fld0+'batch'+str(year)+'_'+str(i+1),imgs=imgs0_slice,speciesid=speciesid0_slice)
+    except:
+        print(str(year)+' failed')
+    
