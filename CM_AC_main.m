@@ -85,7 +85,7 @@ for k=11:length(DataOverview)
                     disp([datestr(now),'; success ; ',fn])
                     status(f)=now;
                 catch
-                    disp([datestr(now),'; failed  ;',fn])
+                    disp([datestr(now),'; failed  ; ',fn])
                     status(f)=-now;
                 end
             end
