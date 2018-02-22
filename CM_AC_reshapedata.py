@@ -17,7 +17,8 @@ Created on Fri Feb  9 10:47:29 2018
 # speciesid.shape=(-1, 0, 400, 400)
 #
 # The frequencies to be stored in the files:
-freqs=[18, 38, 70, 120, 200, 333]
+#freqs=[18, 38, 70, 120, 200, 333]
+freqs=[18, 38, 120, 200]
 # And the number of images per file
 batchsize=32+1
 # If the frequency is missing it will be set to zeros
@@ -52,27 +53,37 @@ def gettrainingset(filename,freqs,minpixels):
     #print(freqs)
     k=0 # Index couning non zero images
     # Initialize training set data array
-    S= mat["ind"].shape
+    S = mat["ind"].shape
+    S2=mat['F'].shape
+    Finfile=mat['F'].astype(int).transpose()
+    S3=len(freqs)
     imgs = np.zeros([S[0],len(freqs),400,400])
     speciesid = np.zeros([S[0],400,400])
-    print(S[0])
     for i in range(0,S[0]):
         if mat["ind"][i,4]>minpixels:
+            #print(i)
             x1 = mat["ind"][i,0]
             x2 = mat["ind"][i,0]+mat["ind"][i,2]
             y1 = mat["ind"][i,1]
             y2 = mat["ind"][i,1]+mat["ind"][i,3]
             nils=np.transpose(mat["sv"][x1:x2,y1:y2,:],(2,0,1))
-            # Check the number of frequencies, if more than 4, choose
-            # [18 38 120 200]
-            k1=0
-            for fr in freqs:
-                for fr1 in mat['F'].astype(int).transpose():
-                    imgs[k,k1,:,:] =nils[np.newaxis,k1,:,:] 
-                    k1=+1
-
-            speciesid[k,:,:] = mat["I"][x1:x2,y1:y2]!=0
-            k+=1
+            # How many NaN's are there in the intersect?
+            nnan=np.count_nonzero(np.isnan(nils.flatten()))
+            if nnan>0:
+                print('NaNs in intersect, removing')
+            else:
+                k1=0
+                speciesid[k,:,:] = mat["I"][x1:x2,y1:y2]!=0
+                k+=1
+                #print(k)
+                for k1 in range(0,S3):
+                    for k2 in range(0,S2[1]):
+                        if Finfile[k2]==freqs[k1]:
+                            imgs[k,k1,:,:] =nils[np.newaxis,k2,:,:] 
+                            #print('-----')
+                            #print(Finfile[k2])
+                            #print(freqs[k1])
+                
     # Release memory
     imgs = imgs[0:(k-1),:,:,:]        
     speciesid = speciesid[0:(k-1),:,:]
@@ -82,7 +93,6 @@ def gettrainingset(filename,freqs,minpixels):
         speciesid=np.empty([0,1,400,400])
         
     return imgs,speciesid
-
 
 #%% Get the data
 
@@ -97,28 +107,28 @@ imgs0 = np.empty([0,len(freqs),400,400])
 speciesid0 = np.empty([0,1,400,400])
 
 # Do da shit
-for year in range(2005,2016):
+for year in range(2008,2016):
     fld=fld0+str(year)
     flds = os.listdir(fld)
-    nofiles = False
+    #flds = flds[100:200]#debug hack
     for file in flds:
         if file.endswith(".mat"):
             print('Reading '+file)
-            nofiles = True
             filename, file_extension = os.path.splitext(file) 
-            #try:
-            if pl=='Linux':
-                filefld = fld+'/'+filename  
-            else:
-                filefld = fld+'\\'+filename  
-            imgs,speciesid = gettrainingset(filefld,freqs,minpixels)
+            try:
+                if pl=='Linux':
+                    filefld = fld+'/'+filename  
+                else:
+                    filefld = fld+'\\'+filename  
+                    
+                imgs,speciesid = gettrainingset(filefld,freqs,minpixels)
             
-            # Write to npz
-            S=imgs.shape
-            #print(S)
-            if S[0]!=0:
-                imgs0=np.concatenate((imgs0,imgs),axis=0)
-                speciesid0=np.concatenate((speciesid0,speciesid),axis=0)
+                # Write to HDF
+                S=imgs.shape
+                #print(S)
+                if S[0]!=0:
+                    imgs0=np.concatenate((imgs0,imgs),axis=0)
+                    speciesid0=np.concatenate((speciesid0,speciesid),axis=0)
                 
     # Randomize and write files
     S2 = imgs0.shape
@@ -130,10 +140,8 @@ for year in range(2005,2016):
         imgs0_slice = imgs0[i*batchsize:((i+1)*batchsize-1),:,:,:]
         speciesid0_slice = speciesid0[i*batchsize:((i+1)*batchsize-1),:,:,:]
         np.savez(fld0+'batch'+str(year)+'_'+str(i),imgs=imgs0_slice,speciesid=speciesid0_slice)
-    
-    if nofiles:
-        imgs0_slice = imgs0[((i+1)*batchsize):,:,:,:]
-        speciesid0_slice = speciesid0[((i+1)*batchsize):,:,:,:]
-        np.savez(fld0+'batch'+str(year)+'_'+str(i+1),imgs=imgs0_slice,speciesid=speciesid0_slice)
-    else:
-        print('No files for '+str(year))
+
+    imgs0_slice = imgs0[((i+1)*batchsize):,:,:,:]
+    speciesid0_slice = speciesid0[((i+1)*batchsize):,:,:,:]
+    np.savez(fld0+'batch'+str(year)+'_'+str(i+1),imgs=imgs0_slice,speciesid=speciesid0_slice)
+
