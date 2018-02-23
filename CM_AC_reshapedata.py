@@ -49,7 +49,7 @@ def gettrainingset(filename,freqs,minpixels):
     matfile = filename+'.mat'
     #print(os.path.isfile(matfile)) 
     mat = spio.loadmat(matfile)
-    print('Reading '+file+ '. Freqs in file:',mat['F'].astype(int),' Freqs stored:',freqs,'\n')
+    print('Reading '+file+ '. Freqs in file:',mat['F'].astype(int),' Freqs stored:',freqs)
     #print(freqs)
     k=0 # Index couning non zero images
     # Initialize training set data array
@@ -125,7 +125,7 @@ for year in range(2008,2009):#2016):
             
                 # Write to HDF
                 S=imgs.shape
-                #print(S)
+                print(' Number of images for file: '+str(S[0])+'\n')
                 if S[0]!=0:
                     imgs0=np.concatenate((imgs0,imgs),axis=0)
                     speciesid0=np.concatenate((speciesid0,speciesid),axis=0)
@@ -134,7 +134,7 @@ for year in range(2008,2009):#2016):
                 
     # Randomize and write files
     S2 = imgs0.shape
-    print('Number of images for ',+int(year)+ ': ' +str(S2)+'\n')
+    print('Number of images for ',+str(year)+ ': ' +str(S2)+'\n')
     #S2[0]-np.floor(S2[0]/batchsize)*batchsize
     imgs0, speciesid0 = shuffle(imgs0, speciesid0, random_state=0)
     NF = int(np.floor(S2[0]/batchsize))
