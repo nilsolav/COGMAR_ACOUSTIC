@@ -49,7 +49,7 @@ def gettrainingset(filename,freqs,minpixels):
     matfile = filename+'.mat'
     #print(os.path.isfile(matfile)) 
     mat = spio.loadmat(matfile)
-    print('Freqs in file:',mat['F'].astype(int),' Freqs stored:',freqs)
+    print('Reading '+file+ '. Freqs in file:',mat['F'].astype(int),' Freqs stored:',freqs,'\n')
     #print(freqs)
     k=0 # Index couning non zero images
     # Initialize training set data array
@@ -101,19 +101,19 @@ def gettrainingset(filename,freqs,minpixels):
 if pl=='Linux':
     fld0 = '/data/deep/data/echosounder/akustikk_all/data/DataOverview_North Sea NOR Sandeel cruise in Apr_May/'  
 else:
-    fld0 = 'D:\\data\\deep\\echosounder\\akustikk_all\\data\DataOverview_North Sea NOR Sandeel cruise in Apr_May\\'
+    #fld0 = 'D:\\data\\deep\\echosounder\\akustikk_all\\data\DataOverview_North Sea NOR Sandeel cruise in Apr_May\\'
+    fld0 = '\\\\ces.imr.no\\data\\deep\\echosounder\\akustikk_all\\data\DataOverview_North Sea NOR Sandeel cruise in Apr_May\\'
 
 imgs0 = np.empty([0,len(freqs),400,400])
 speciesid0 = np.empty([0,1,400,400])
 
 # Do da shit
-for year in range(2008,2016):
+for year in range(2008,2009):#2016):
     fld=fld0+str(year)
     flds = os.listdir(fld)
     #flds = flds[100:200]#debug hack
     for file in flds:
         if file.endswith(".mat"):
-            print('Reading '+file)
             filename, file_extension = os.path.splitext(file) 
             try:
                 if pl=='Linux':
@@ -134,6 +134,7 @@ for year in range(2008,2016):
                 
     # Randomize and write files
     S2 = imgs0.shape
+    print('Number of images for ',+int(year)+ ': ' +str(S2)+'\n')
     #S2[0]-np.floor(S2[0]/batchsize)*batchsize
     imgs0, speciesid0 = shuffle(imgs0, speciesid0, random_state=0)
     NF = int(np.floor(S2[0]/batchsize))
@@ -144,7 +145,7 @@ for year in range(2008,2016):
             speciesid0_slice = speciesid0[i*batchsize:((i+1)*batchsize-1),:,:,:]
             np.savez(fld0+'batch'+str(year)+'_'+str(i),imgs=imgs0_slice,speciesid=speciesid0_slice)
     else:
-        i=0
+        i=-1
     
     imgs0_slice = imgs0[((i+1)*batchsize):,:,:,:]
     speciesid0_slice = speciesid0[((i+1)*batchsize):,:,:,:]
