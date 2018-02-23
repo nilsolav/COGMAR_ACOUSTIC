@@ -96,7 +96,7 @@ if ~isempty(datfile)
     %
     
     %% Extract the main binary layer
-    [X,Y] = meshgrid(1:size(sv,2),size(sv,1));
+    [X,Y] = meshgrid(1:size(sv,2),data.pings(ch).range);
     I = zeros(size(data.pings(ch).sv,1),size(data.pings(ch).sv,2));
     
     if ~isempty(school)
