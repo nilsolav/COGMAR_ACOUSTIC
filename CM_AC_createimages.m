@@ -17,6 +17,20 @@ for ch = 1:length(raw_data.pings)
     F(ch)=raw_data.pings(ch).frequency(1)/1000;
 end
 
+% Somtetimes there are missing frequencies, if so, give error
+br = false;
+if isempty(find(F==(str2num(f))))
+    disp('Missing main plotting frequency')
+    br=true;
+end
+if isempty(find(F==par.rangef))
+    disp('Missing main range frequency')
+    br=true;
+end
+if br
+    error('Missing frequencies')
+end
+
 %% Plot result
 if ~isempty(png)
     ch = find(F==(str2num(f)));
@@ -104,7 +118,7 @@ if ~isempty(datfile)
         for i=1:length(school)
             % Plot only non empty schools (since we do not know whether an
             % empty school is assiciated to a frequency)
-            if ~isempty(school(i).channel)
+            if isfield(school(i),'channel')&&~isempty(school(i).channel)
                 % Loop over channels
                 % Plot only the relevant frequency
                 
@@ -124,7 +138,9 @@ if ~isempty(datfile)
                     % Set the species ID to the max fraction
                     [~,ind]=max(fraction(:));
                     in=inpolygon(X,Y, school(i).x,school(i).y-td);
-                    I(in) = id(ind);
+                    if ~isempty(ind)%In some case there are no species attributed. 
+                        I(in) = id(ind);
+                    end
                 end
             end
         end
