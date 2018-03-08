@@ -8,7 +8,7 @@
 
 
 % Plotting frequency
-par.f='38';
+par.f='200';
 
 % Use the 38kHz as the main freq for the range resolution
 par.rangef = 38;
@@ -36,7 +36,7 @@ if isunix
     dd =  '/data/deep/data/echosounder/akustikk_all/';
 else
     cd  D:\repos\Github\COGMAR_ACOUSTIC
-    dd = '\\ces.imr.no\deep\data\echosounder\akustikk_all\';
+    dd = 'D:\DATA\deep\echosounder\akustikk_all\'
 end
 
 % This gets a list of all the cruise series
@@ -48,7 +48,7 @@ k=11; % SandEel
 warning off
 
 %%
-for k=11:length(DataOverview)
+for k=11:11%length(DataOverview)
     dd_data = fullfile(dd,'data',DataOverview(k).name(1:end-4));
     % Load the paired files
     dat = load(fullfile(dd,'dataoverviews',['DataPairedFiles',DataOverview(k).name(13:end)]));
@@ -87,7 +87,7 @@ for k=11:length(DataOverview)
                 catch
                     disp([datestr(now),'; failed  ; ',fn])
                     status(f)=-now;
-                end
+                 end
             end
             save(statusfile,'status')
         end
