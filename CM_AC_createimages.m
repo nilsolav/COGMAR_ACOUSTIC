@@ -104,14 +104,14 @@ if ~isempty(datfile)
     %     for ch = 1:length(F)
     %         figure(ch)
     %         clf
-    %         imagesc(10*log10(squeeze(sv(:,:,ch)-squeeze(sv(:,:,Fi)+1))))
+    %         imagesc(10*(log10(squeeze(sv(:,:,ch)))-log10(squeeze(sv(:,:,Fi)))))
     %     end
-    %     imagesc(10*log10(squeeze(sv(:,:,1)-squeeze(sv(:,:,2)))))
-    %
+    %     imagesc(10*log10(squeeze(sv(:,:,1))))
+    
     
     %% Extract the main binary layer
-    [X,Y] = meshgrid(1:size(sv,2),data.pings(ch).range);
-    I = zeros(size(data.pings(ch).sv,1),size(data.pings(ch).sv,2));
+    [X,Y] = meshgrid(1:size(sv,2),data.pings(Fi).range);
+    I = zeros(size(X));
     
     if ~isempty(school)
         % Loop over schools
