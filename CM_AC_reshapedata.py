@@ -20,7 +20,7 @@ Created on Fri Feb  9 10:47:29 2018
 #freqs=[18, 38, 70, 120, 200, 333]
 freqs=[18, 38, 120, 200]
 # And the number of images per file
-batchsize=32+1
+batchsize=32
 # If the frequency is missing it will be set to zeros
 # The minimum number of positive class pixels per image that goes into the 
 # training set:
@@ -104,12 +104,13 @@ if pl=='Linux':
 else:
     fld0 = 'D:\\data\\deep\\echosounder\\akustikk_all\\data\DataOverview_North Sea NOR Sandeel cruise in Apr_May\\'
 
-imgs0 = np.empty([0,len(freqs),400,400])
-speciesid0 = np.empty([0,1,400,400])
 
 # Do da shit
 for year in range(2012,2013):
+    imgs0 = np.empty([0,len(freqs),400,400])
+    speciesid0 = np.empty([0,1,400,400])
     fld=fld0+str(year)
+    batchno=0
     flds = os.listdir(fld)
     #flds = flds[0:263]#debug hack
     filno=0
@@ -133,23 +134,20 @@ for year in range(2012,2013):
                     speciesid0=np.concatenate((speciesid0,speciesid),axis=0)
             except:
                 print(file+' failed')
+            S2=imgs0.shape
+            if S2[0]>batchsize:
+                # Write slice to file
+                imgs0_slice = imgs0[0:batchsize,:,:,:]
+                speciesid0_slice = speciesid0[0:batchsize,:,:,:]
+                print('Storing '+fld0+'batch'+str(year)+'_'+str(batchno)+'.npz\n')
+                np.savez(fld0+'batch'+str(year)+'_'+str(batchno),imgs=imgs0_slice,speciesid=speciesid0_slice,freqs=freqs)
+                batchno+=1                
+                # Keep remaining slice
+                imgs0=imgs0[batchsize:,:,:,:]
+                speciesid0=speciesid0[batchsize:,:,:]
                 
-    # Randomize and write files
-    S2 = imgs0.shape
-    print('Number of images for '+str(year)+ ': ' +str(S2[0])+'\n')
-    #S2[0]-np.floor(S2[0]/batchsize)*batchsize
-    imgs0, speciesid0 = shuffle(imgs0, speciesid0, random_state=0)
-    NF = int(np.floor(S2[0]/batchsize))
-    if NF>0:
-        for i in range(0,NF):
-            print('Storing '+fld0+'batch'+str(year)+'_'+str(i)+'.npz\n')
-            imgs0_slice = imgs0[i*batchsize:((i+1)*batchsize-1),:,:,:]
-            speciesid0_slice = speciesid0[i*batchsize:((i+1)*batchsize-1),:,:,:]
-            np.savez(fld0+'batch'+str(year)+'_'+str(i),imgs=imgs0_slice,speciesid=speciesid0_slice,freqs=freqs)
-    else:
-        i=-1
-    
-    imgs0_slice = imgs0[((i+1)*batchsize):,:,:,:]
-    speciesid0_slice = speciesid0[((i+1)*batchsize):,:,:,:]
-    np.savez(fld0+'batch'+str(year)+'_'+str(i+1),imgs=imgs0_slice,speciesid=speciesid0_slice)
+    # Write remaining stuff        
+    print('Storing '+fld0+'batch'+str(year)+'_'+str(batchno)+'.npz\n')
+    np.savez(fld0+'batch'+str(year)+'_'+str(batchno),imgs=imgs0,speciesid=speciesid0,freqs=freqs)
+                
 
