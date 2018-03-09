@@ -49,7 +49,7 @@ def gettrainingset(filename,freqs,minpixels):
     matfile = filename+'.mat'
     #print(os.path.isfile(matfile)) 
     mat = spio.loadmat(matfile)
-    print('Reading '+file+ '. Freqs in file:'+ str(mat['F'].astype(int))+'. Freqs stored:'+str(freqs))
+    #print('Reading '+file+ '. Freqs in file:'+ str(mat['F'].astype(int))+'. Freqs stored:'+str(freqs))
     #print(freqs)
     k=0 # Index couning non zero images
     # Initialize training set data array
@@ -74,7 +74,7 @@ def gettrainingset(filename,freqs,minpixels):
             else:
                 k1=0
                 speciesid[k,:,:] = mat["I"][x1:x2,y1:y2]!=0
-                k+=1
+                
                 #print(k)
                 for k1 in range(0,S3):
                     for k2 in range(0,S2[1]):
@@ -83,10 +83,11 @@ def gettrainingset(filename,freqs,minpixels):
                             #print('-----')
                             #print(Finfile[k2])
                             #print(freqs[k1])
+                k+=1
                 
     # Release memory
-    imgs = imgs[0:(k-1),:,:,:]        
-    speciesid = speciesid[0:(k-1),:,:]
+    imgs = imgs[0:k:1,:,:,:]        
+    speciesid = speciesid[0:k:1,:,:]
     speciesid = speciesid[:,np.newaxis,:,:]
     if k==0:
         imgs=np.empty([0,len(freqs),400,400])
@@ -107,25 +108,27 @@ imgs0 = np.empty([0,len(freqs),400,400])
 speciesid0 = np.empty([0,1,400,400])
 
 # Do da shit
-for year in range(2008,2016):
+for year in range(2012,2013):
     fld=fld0+str(year)
     flds = os.listdir(fld)
-    #flds = flds[100:130]#debug hack
+    #flds = flds[0:263]#debug hack
+    filno=0
     for file in flds:
+        filno+=1
         if file.endswith(".mat"):
             filename, file_extension = os.path.splitext(file) 
             try:
+                #if file=='2008205-D20080515-T091741.mat': 
                 if pl=='Linux':
                     filefld = fld+'/'+filename  
                 else:
                     filefld = fld+'\\'+filename  
                     
                 imgs,speciesid = gettrainingset(filefld,freqs,minpixels)
-            
                 # Write to HDF
                 S=imgs.shape
                 if S[0]!=0:
-                    print(' Number of images : '+str(S[0])+'\n')
+                    print('file: '+filename+'; filenumber : '+str(filno)+'; number of images : '+str(S[0])+'\n')
                     imgs0=np.concatenate((imgs0,imgs),axis=0)
                     speciesid0=np.concatenate((speciesid0,speciesid),axis=0)
             except:
@@ -142,7 +145,7 @@ for year in range(2008,2016):
             print('Storing '+fld0+'batch'+str(year)+'_'+str(i)+'.npz\n')
             imgs0_slice = imgs0[i*batchsize:((i+1)*batchsize-1),:,:,:]
             speciesid0_slice = speciesid0[i*batchsize:((i+1)*batchsize-1),:,:,:]
-            np.savez(fld0+'batch'+str(year)+'_'+str(i),imgs=imgs0_slice,speciesid=speciesid0_slice)
+            np.savez(fld0+'batch'+str(year)+'_'+str(i),imgs=imgs0_slice,speciesid=speciesid0_slice,freqs=freqs)
     else:
         i=-1
     
