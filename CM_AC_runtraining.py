@@ -21,9 +21,7 @@ import CM_AC_models as md
 #%% Get the model
 K.clear_session()
 freqs=4
-model = md.model1(freqs)
-# stored frequencies=[18, 38, 70, 120, 200, 333]
-freqsi = [0, 1, 3, 4]
+model = md.model2(freqs)
 
 # File locations
 if pl=='Linux':
@@ -33,14 +31,22 @@ else:
 
 # Do da shit
 flds = os.listdir(fld)
-for file in flds:
-    if file.endswith(".npz"):
-            print(file)
-            dat=np.load(fld+file)
-            model.fit(dat["imgs"][:,freqsi,:,:],dat["speciesid"])
+#%% Run 20 epochs
+for epochs in np.arange(20).astype('int'):
+    # Loop over batches
+    for file in flds:
+        if file.endswith(".npz"):
+                print(file)
+                dat=np.load(fld+file)
+                model.fit(dat["imgs"][:,:,:,:],dat["speciesid"])
+    # Get the weights
+    dat=model.get_weights()
+    mod=model.to_json()
+    # Save the weights as numpy after each epoch
+    np.savez(fld+'modelweights_epoch_'+str(epochs)+'.npz',dat=dat,mod=mod)
 
-
-
+#%%
+    
 
 
 
