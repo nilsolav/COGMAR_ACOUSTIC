@@ -57,8 +57,8 @@ def gettrainingset(filename,freqs,minpixels):
     S2=mat['F'].shape
     Finfile=mat['F'].astype(int).transpose()
     S3=len(freqs)
-    imgs = np.zeros([S[0],len(freqs),400,400])
-    speciesid = np.zeros([S[0],400,400])
+    imgs = np.zeros([S[0],len(freqs),200,200])
+    speciesid = np.zeros([S[0],200,200])
     for i in range(0,S[0]):
         if mat["ind"][i,4]>minpixels:
             #print(i)
@@ -90,8 +90,8 @@ def gettrainingset(filename,freqs,minpixels):
     speciesid = speciesid[0:k:1,:,:]
     speciesid = speciesid[:,np.newaxis,:,:]
     if k==0:
-        imgs=np.empty([0,len(freqs),400,400])
-        speciesid=np.empty([0,1,400,400])
+        imgs=np.empty([0,len(freqs),200,200])
+        speciesid=np.empty([0,1,200,200])
         
     return imgs,speciesid
 
@@ -106,9 +106,9 @@ else:
 
 
 # Do da shit
-for year in range(2012,2013):
-    imgs0 = np.empty([0,len(freqs),400,400])
-    speciesid0 = np.empty([0,1,400,400])
+for year in range(2010,2017):
+    imgs0 = np.empty([0,len(freqs),200,200])
+    speciesid0 = np.empty([0,1,200,200])
     fld=fld0+str(year)
     batchno=0
     flds = os.listdir(fld)
@@ -140,7 +140,8 @@ for year in range(2012,2013):
                 imgs0_slice = imgs0[0:batchsize,:,:,:]
                 speciesid0_slice = speciesid0[0:batchsize,:,:,:]
                 print('Storing '+fld0+'batch'+str(year)+'_'+str(batchno)+'.npz\n')
-                np.savez(fld0+'batch'+str(year)+'_'+str(batchno),imgs=imgs0_slice,speciesid=speciesid0_slice,freqs=freqs)
+                imgs0_slice_sh, speciesid0_slice_sh = shuffle(imgs0_slice, speciesid0_slice, random_state=0)
+                np.savez(fld0+'batch'+str(year)+'_'+str(batchno),imgs=imgs0_slice_sh,speciesid=speciesid0_slice_sh,freqs=freqs)
                 batchno+=1                
                 # Keep remaining slice
                 imgs0=imgs0[batchsize:,:,:,:]
