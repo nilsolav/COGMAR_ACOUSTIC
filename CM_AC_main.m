@@ -10,14 +10,14 @@
 % Plotting frequency
 par.f='200';
 
-% Use the 38kHz as the main freq for the range resolution
-par.rangef = 38;
+% Use the 200kHz as the main freq for the range resolution
+par.rangef = 200;
 
 % Generate test sets in in pixels
-par.dx = 400;%px
-par.dy = 400;%px
-par.overlapx = 200;%px
-par.overlapy = 200;%px
+par.dx = 200;%px
+par.dy = 200;%px
+par.overlapx = 100;%px
+par.overlapy = 100;%px
 
 
 % Dependencies:
@@ -55,7 +55,7 @@ for k=11:11%length(DataOverview)
     dat2 = load(fullfile(dd,'dataoverviews',['DataOverview',DataOverview(k).name(13:end)]));
     
     % Loop over years witin cruise series
-    for i=1:length(dat.pairedfiles)
+    for i=11:length(dat.pairedfiles)
         % Create survey - year directory
         dd_data_year = fullfile(dd,'data',DataOverview(k).name(1:end-4),dat2.DataStatus{i+1,2});
         
@@ -74,6 +74,7 @@ for k=11:11%length(DataOverview)
             if status(f)<=0 % Don't rerun files that are ok (positive numbers)
                 % Create file names (in and out)
                 [~,fn,~]=fileparts(raw0(f).name);
+                %if strcmp(fn,'2016837-D20160427-T021548')
                 png = fullfile(dd_data_year,[fn,'.png']);
                 raw = fullfile(dd_data_year,[fn,'.raw']);
                 snap = fullfile(dd_data_year,[fn,'.snap']);
@@ -87,7 +88,8 @@ for k=11:11%length(DataOverview)
                 catch
                     disp([datestr(now),'; failed  ; ',fn])
                     status(f)=-now;
-                 end
+                end
+                %end
             end
             save(statusfile,'status')
         end

@@ -102,11 +102,10 @@ def gettrainingset(filename,freqs,minpixels):
 if pl=='Linux':
     fld0 = '/data/deep/data/echosounder/akustikk_all/data/DataOverview_North Sea NOR Sandeel cruise in Apr_May/'  
 else:
-    fld0 = 'D:\\data\\deep\\echosounder\\akustikk_all\\data\DataOverview_North Sea NOR Sandeel cruise in Apr_May\\'
-
-
+    fld0 = 'C:\\DATA\\deep\\echosounder\\akustikk_all\\data\DataOverview_North Sea NOR Sandeel cruise in Apr_May\\'
+            
 # Do da shit
-for year in range(2010,2017):
+for year in range(2007,2017):
     imgs0 = np.empty([0,len(freqs),200,200])
     speciesid0 = np.empty([0,1,200,200])
     fld=fld0+str(year)
@@ -135,7 +134,7 @@ for year in range(2010,2017):
             except:
                 print(file+' failed')
             S2=imgs0.shape
-            if S2[0]>batchsize:
+            while S2[0]>batchsize:
                 # Write slice to file
                 imgs0_slice = imgs0[0:batchsize,:,:,:]
                 speciesid0_slice = speciesid0[0:batchsize,:,:,:]
@@ -146,6 +145,7 @@ for year in range(2010,2017):
                 # Keep remaining slice
                 imgs0=imgs0[batchsize:,:,:,:]
                 speciesid0=speciesid0[batchsize:,:,:]
+                S2=imgs0.shape
                 
     # Write remaining stuff        
     print('Storing '+fld0+'batch'+str(year)+'_'+str(batchno)+'.npz\n')
