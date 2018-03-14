@@ -9,6 +9,7 @@
 
 % Plotting frequency
 par.f='200';
+par.F='200';
 
 % Use the 38kHz as the main freq for the range resolution
 par.rangef = 38;
@@ -33,7 +34,7 @@ if isunix
     % Add libraries
     addpath('/nethome/nilsolav/repos/github/LSSSreader/src/')
     addpath('/nethome/nilsolav/repos/hg/matlabtoolbox/echolab/readEKRaw')
-    dd =  '/data/deep/data/echosounder/akustikk_all/';
+    dd =  '/gpfs/gpfs0/deep/data/echosounder/akustikk_all/';
 else
     cd  D:\repos\Github\COGMAR_ACOUSTIC
     dd = 'D:\DATA\deep\echosounder\akustikk_all\'
@@ -43,7 +44,7 @@ end
 DataOverview = dir(fullfile(dd,'dataoverviews','DataOverview*.mat'));
 
 %% Start loop over cruise series
-%par.F='200';
+
 k=11; % SandEel
 warning off
 
